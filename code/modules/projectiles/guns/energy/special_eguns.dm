@@ -959,7 +959,7 @@
 	QDEL_IN(src, 0.3 SECONDS)
 
 //Healing Crossbow
-/obj/item/gun/healing
+/obj/item/gun/energy/healbow
 	name = "Crusader's Crossbow"
 	desc = "A reverse engineered weapon using syndicate technology, now adapted for Medical purposes."
 	icon_state = "crossbowlarge"
@@ -970,18 +970,19 @@
 	can_holster = FALSE // it's large after all
 	can_charge = FALSE
 	selfcharge = FALSE
-	ammo_type = list(/obj/item/ammo_casing/energy/healing/brute, /obj/item/ammo_casing/energy/healing/burn)
-	empty_state = "crossbowlarge_empty"
+	ammo_type = list(/obj/item/ammo_casing/energy/healbow/brute, /obj/item/ammo_casing/energy/healbow/burn)
 	var/reservoir_volume = 100 //This is just a transient reservoir to make sure reagent transfer works.
 	var/healstorage = 0
+	var/static/list/safe_chem_healbow_list = list("silver_sulfadiazine", "styptic_powder", "synthflesh")
+	var/trans = 0
 	//var/brutestorage = 0
 	//var/burnstorage = 0
 
-/obj/item/gun/energy/healing/Initialize(mapload)
+/obj/item/gun/energy/healbow/Initialize(mapload)
 	. = ..()
 	create_reagents(reservoir_volume)
 
-/obj/item/gun/energy/healing/attackby(obj/item/A, mob/user, params, show_msg)
+/obj/item/gun/energy/healbow/attackby(obj/item/A, mob/user, params, show_msg)
 	if(istype(A, /obj/item/reagent_containers))
 		var/obj/item/reagent_containers/incoming = A
 		if(!incoming.is_drainable())
@@ -995,6 +996,9 @@
 			to_chat(user, "<span class='warning'>[src]'s internal reservoir is full!</span>")
 			return
 
+		else
+			trans = incoming.reagents.trans_to(src, incoming.amount_per_transfer_from_this)
+			to_chat(user, "<span class='notice'>You transfer [round(trans)] unit\s of the solution to [src]'s internal reservoir.</span>")
 		//if(incoming.reagents.id = ("silver_sulfadiazine"))
 			//var/trans = incoming.reagents.trans_to(src, incoming.amount_per_transfer_from_this)
 			//to_chat(user, "<span class='notice'>You transfer [round(trans)] unit\s of Silver Sulfadiazine to [src]'s internal reservoir.</span>")
@@ -1007,52 +1011,53 @@
 			//var/brutestorage += (2*trans)
 			//var/reservoir_volume = 0
 
-		if(incoming.reagents.id = ("synthflesh"))
-			var/trans = incoming.reagents.trans_to(src, incoming.amount_per_transfer_from_this)
-			to_chat(user, "<span class='notice'>You transfer [round(trans)] unit\s of the solution to [src]'s internal reservoir.</span>")
-			var/healstorage += (2*round(trans))
-			//var/brutestorage += (trans)
-			//var/burnstorage += (trans)
-			var/reservoir_volume = 0
-
+/obj/item/gun/energy/healbow/on_reagent_change()
+	var/found_forbidden_reagent = FALSE
+	for(var/datum/reagent/R in reagents.reagent_list)
+		if(!safe_chem_healbow_list.Find(R.id))
+			reagents.del_reagent(R.id)
+			trans = 0
+			found_forbidden_reagent = TRUE
+	if(found_forbidden_reagent = TRUE)
+		if(ismob(loc))
+			to_chat(loc, "<span class='warning'>[src] identifies and removes a harmful substance.</span>")
 		else
-			to_chat(user, "<span class='warning'>[src] does not accept this chemical!</span>")
-			return
-
+			visible_message("<span class='warning'>[src] identifies and removes a harmful substance.</span>")
 	else
-		return ..()
+		healstorage += (2*round(trans))
+		reagents.remove_any(trans)
 
-/obj/item/gun/energy/healing/recharging
-	if(!healstorage = 0)
+/obj/item/gun/energy/healbow/process()
+	if(healstorage > 0)
 		cell.give(10)
 		healstorage -= 1
 	else
 		return
 
-/obj/item/ammo_casing/energy/healing/brute
+/obj/item/ammo_casing/energy/healbow/brute
 	projectile_type = /obj/item/projectile/energy/bolt
 	muzzle_flash_color = null
 	muzzle_flash_effect = /obj/effect/temp_visual/target_angled/muzzle_flash
-	select_name = "bolt"
+	select_name = "brute healing bolt"
 	e_cost = 100
 	delay = 1 SECONDS
 	fire_sound = 'sound/weapons/genhit.ogg'
 
-/obj/item/ammo_casing/energy/healing/burn
+/obj/item/ammo_casing/energy/healbow/burn
 	projectile_type = /obj/item/projectile/energy/bolt
 	muzzle_flash_color = null
 	muzzle_flash_effect = /obj/effect/temp_visual/target_angled/muzzle_flash
-	select_name = "bolt"
+	select_name = "burn healing bolt"
 	e_cost = 100
 	delay = 1 SECONDS
 	fire_sound = 'sound/weapons/genhit.ogg'
 
-/obj/item/projectile/energy/healing/brute
+/obj/item/projectile/energy/healbow/brute
 	name = "healing energy bolt"
 	damage = -10
 	damage_type = BRUTE
 	armour_penetration_percentage = 100 //I'm trying to HEAL, damn you!
 	icon_state = "cbolt"
 
-/obj/item/projectile/energy/healing/burn
+/obj/item/projectile/energy/healbow/burn
 	damage_type = BURN
