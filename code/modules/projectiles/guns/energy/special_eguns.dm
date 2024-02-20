@@ -972,9 +972,8 @@
 	selfcharge = FALSE
 	ammo_type = list(/obj/item/ammo_casing/energy/healbow/brute, /obj/item/ammo_casing/energy/healbow/burn)
 	var/reservoir_volume = 100 //This is just a transient reservoir to make sure reagent transfer works.
-	var/healstorage = 0
+	var/heal_storage = 0
 	var/static/list/safe_chem_healbow_list = list("silver_sulfadiazine", "styptic_powder", "synthflesh")
-	var/trans = 0
 	//var/brutestorage = 0
 	//var/burnstorage = 0
 
@@ -997,8 +996,9 @@
 			return
 
 		else
-			trans = incoming.reagents.trans_to(src, incoming.amount_per_transfer_from_this)
-			to_chat(user, "<span class='notice'>You transfer [round(trans)] unit\s of the solution to [src]'s internal reservoir.</span>")
+			//trans = incoming.reagents.trans_to(src, incoming.amount_per_transfer_from_this)
+			to_chat(user, "<span class='notice'>You transfer the solution to [src]'s internal reservoir.</span>")
+			reagent_loaded()
 		//if(incoming.reagents.id = ("silver_sulfadiazine"))
 			//var/trans = incoming.reagents.trans_to(src, incoming.amount_per_transfer_from_this)
 			//to_chat(user, "<span class='notice'>You transfer [round(trans)] unit\s of Silver Sulfadiazine to [src]'s internal reservoir.</span>")
@@ -1011,31 +1011,34 @@
 			//var/brutestorage += (2*trans)
 			//var/reservoir_volume = 0
 
-/obj/item/gun/energy/healbow/on_reagent_change()
+/obj/item/gun/energy/healbow/proc/reagent_loaded()
 	var/found_forbidden_reagent = FALSE
-	for(var/datum/reagent/R in reagents.reagent_list)
-		if(!safe_chem_healbow_list.Find(R.id))
-			reagents.del_reagent(R.id)
-			trans = 0
-			found_forbidden_reagent = TRUE
-	if(!found_forbidden_reagent)
-		healstorage += (2*round(trans))
-		reagents.remove_any(trans)
-		return
-	if(ismob(loc))
-		to_chat(loc, "<span class='warning'>[src] identifies and removes a harmful substance.</span>")
+	for(var/datum/reagent/R in reagents.total_volume)
+		for(var/forbidden_reagent in safe_chem_healbow_list)
+			if(R.id != safe_chem_healbow_list)
+				reagents.del_reagent(R.id)
+				found_forbidden_reagent = TRUE
+	var/transferred = reagents.total_volume
+	heal_storage += 2 * round(transferred, 1)
+	reagents.clear_reagents()
+
+	if(found_forbidden_reagent)
+		if(ismob(loc))
+			to_chat(loc, "<span class='warning'>[src] identifies and removes a harmful substance.</span>")
+		else
+			visible_message("<span class='warning'>[src] identifies and removes a harmful substance.</span>")
 	else
-		visible_message("<span class='warning'>[src] identifies and removes a harmful substance.</span>")
+		return
 
 /obj/item/gun/energy/healbow/process()
-	if(healstorage > 0)
+	if(heal_storage > 0)
 		cell.give(10)
-		healstorage -= 1
+		heal_storage -= 1
 	else
 		return
 
 /obj/item/ammo_casing/energy/healbow/brute
-	projectile_type = /obj/item/projectile/energy/bolt
+	projectile_type = /obj/item/projectile/energy/healbow/brute
 	muzzle_flash_color = null
 	muzzle_flash_effect = /obj/effect/temp_visual/target_angled/muzzle_flash
 	select_name = "brute healing bolt"
@@ -1044,7 +1047,7 @@
 	fire_sound = 'sound/weapons/genhit.ogg'
 
 /obj/item/ammo_casing/energy/healbow/burn
-	projectile_type = /obj/item/projectile/energy/bolt
+	projectile_type = /obj/item/projectile/energy/healbow/burn
 	muzzle_flash_color = null
 	muzzle_flash_effect = /obj/effect/temp_visual/target_angled/muzzle_flash
 	select_name = "burn healing bolt"
