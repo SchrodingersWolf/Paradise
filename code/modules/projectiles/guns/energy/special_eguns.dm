@@ -1018,14 +1018,14 @@
 			reagents.del_reagent(R.id)
 			trans = 0
 			found_forbidden_reagent = TRUE
-	if(found_forbidden_reagent = TRUE)
-		if(ismob(loc))
-			to_chat(loc, "<span class='warning'>[src] identifies and removes a harmful substance.</span>")
-		else
-			visible_message("<span class='warning'>[src] identifies and removes a harmful substance.</span>")
-	else
+	if(!found_forbidden_reagent)
 		healstorage += (2*round(trans))
 		reagents.remove_any(trans)
+		return
+	if(ismob(loc))
+		to_chat(loc, "<span class='warning'>[src] identifies and removes a harmful substance.</span>")
+	else
+		visible_message("<span class='warning'>[src] identifies and removes a harmful substance.</span>")
 
 /obj/item/gun/energy/healbow/process()
 	if(healstorage > 0)
