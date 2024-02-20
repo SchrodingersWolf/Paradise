@@ -1015,7 +1015,7 @@
 	var/found_forbidden_reagent = FALSE
 	for(var/datum/reagent/R in reagents.total_volume)
 		for(var/forbidden_reagent in safe_chem_healbow_list)
-			if(R.id != safe_chem_healbow_list)
+			if(R.id != forbidden_reagent)
 				reagents.del_reagent(R.id)
 				found_forbidden_reagent = TRUE
 	var/transferred = reagents.total_volume
