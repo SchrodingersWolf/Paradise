@@ -996,7 +996,7 @@
 			return
 
 		else
-			//trans = incoming.reagents.trans_to(src, incoming.amount_per_transfer_from_this)
+			var/trans = incoming.reagents.trans_to(src, incoming.amount_per_transfer_from_this)
 			to_chat(user, "<span class='notice'>You transfer the solution to [src]'s internal reservoir.</span>")
 			reagent_loaded()
 		//if(incoming.reagents.id = ("silver_sulfadiazine"))
