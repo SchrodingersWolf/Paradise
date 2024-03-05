@@ -1011,14 +1011,22 @@
 			//var/brutestorage += (2*trans)
 			//var/reservoir_volume = 0
 
+/obj/item/gun/energy/healbow/proc/is_forbidden(datum/reagent/reagent_to_check)
+	. = TRUE
+	for(var/allowed_reagent in safe_chem_healbow_list)
+	if(R.id == allowed_reagent)
+		. = FALSE
+
 /obj/item/gun/energy/healbow/proc/reagent_loaded()
 	var/found_forbidden_reagent = FALSE
-	for(var/datum/reagent/R in reagents.total_volume)
-		for(var/forbidden_reagent in safe_chem_healbow_list)
-			if(R.id != forbidden_reagent)
+	for(var/datum/reagent/R in reagents.reagent_list)
+		message_admins(R.id)
+		for(var/datum/reagent/R in reagents.reagent_list)
+			if(is_forbidden(R))
 				reagents.del_reagent(R.id)
 				found_forbidden_reagent = TRUE
 	var/transferred = reagents.total_volume
+	message_admins(reagents.total_volume)
 	heal_storage += 2 * round(transferred, 1)
 	reagents.clear_reagents()
 
