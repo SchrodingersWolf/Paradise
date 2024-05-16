@@ -981,7 +981,28 @@
 	animate(src, transform = M * 10, time = 0.3 SECONDS, alpha = 0)
 	QDEL_IN(src, 0.3 SECONDS)
 
-<<<<<<< HEAD
+/obj/item/gun/energy/sparker
+	name = "\improper SPRK-12"
+	desc = "A small, pistol-sized laser gun designed to regain charges from EMPs. Energy efficient, though its beams are weaker. Good at dual wielding, however."
+	icon_state = "dueling_pistol"
+	item_state = "dueling_pistol"
+	w_class = WEIGHT_CLASS_SMALL
+	can_holster = TRUE
+	execution_speed = 4 SECONDS
+	weapon_weight = WEAPON_DUAL_WIELD
+	shaded_charge = TRUE
+	ammo_type = list(/obj/item/ammo_casing/energy/laser/sparker)
+	/// The cooldown tracking when we were last EMP'd
+	COOLDOWN_DECLARE(emp_cooldown)
+
+/obj/item/gun/energy/sparker/emp_act(severity)
+	if(!COOLDOWN_FINISHED(src, emp_cooldown))
+		return
+	cell.charge = cell.maxcharge
+	COOLDOWN_START(src, emp_cooldown, 1 MINUTES)
+	atom_say("Energy coils recharged!")
+	update_icon(UPDATE_ICON_STATE | UPDATE_OVERLAYS)
+
 //Healing Crossbow
 /obj/item/gun/energy/healbow
 	name = "Crusader's Crossbow"
@@ -1096,26 +1117,4 @@
 
 /obj/item/projectile/energy/healbow/burn
 	damage_type = BURN
-=======
-/obj/item/gun/energy/sparker
-	name = "\improper SPRK-12"
-	desc = "A small, pistol-sized laser gun designed to regain charges from EMPs. Energy efficient, though its beams are weaker. Good at dual wielding, however."
-	icon_state = "dueling_pistol"
-	item_state = "dueling_pistol"
-	w_class = WEIGHT_CLASS_SMALL
-	can_holster = TRUE
-	execution_speed = 4 SECONDS
-	weapon_weight = WEAPON_DUAL_WIELD
-	shaded_charge = TRUE
-	ammo_type = list(/obj/item/ammo_casing/energy/laser/sparker)
-	/// The cooldown tracking when we were last EMP'd
-	COOLDOWN_DECLARE(emp_cooldown)
 
-/obj/item/gun/energy/sparker/emp_act(severity)
-	if(!COOLDOWN_FINISHED(src, emp_cooldown))
-		return
-	cell.charge = cell.maxcharge
-	COOLDOWN_START(src, emp_cooldown, 1 MINUTES)
-	atom_say("Energy coils recharged!")
-	update_icon(UPDATE_ICON_STATE | UPDATE_OVERLAYS)
->>>>>>> master
