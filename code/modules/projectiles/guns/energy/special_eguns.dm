@@ -1285,13 +1285,33 @@
 	delay = 1 SECONDS
 	fire_sound = 'sound/weapons/genhit.ogg'
 
-/obj/item/projectile/energy/healbow/brute
+/obj/item/projectile/energy/healbow
 	name = "healing energy bolt"
-	damage = -10
-	damage_type = BRUTE
+	damage = 0
 	armour_penetration_percentage = 100 //I'm trying to HEAL, damn you!
 	icon_state = "cbolt"
+	damage_type = STAMINA
+	var/heal_amount = 10
+	var/heal_type
+
+/obj/item/projectile/energy/healbow/on_hit(atom/target, blocked, hit_zone)
+	. = ..()
+	if(!heal_type)
+		return
+
+	if(!istype(target, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/human_target = target
+
+	if(heal_type == BRUTE)
+		human_target.HealDamage(hit_zone, heal_amount)
+	if(heal_type == BURN)
+		human_target.HealDamage(hit_zone, burn = heal_amount)
+
+
+/obj/item/projectile/energy/healbow/brute
+	heal_type = BRUTE
 
 /obj/item/projectile/energy/healbow/burn
-	damage_type = BURN
+	heal_type = BURN
 
